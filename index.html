@@ -101,7 +101,9 @@ async function sendMsg(){
  try{
  const res=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:t})});
  const data=await res.json();
- const reply=data?.choices?.[0]?.message?.content || 'Error';
+ const reply = data?.choices?.[0]?.message?.content 
+           || data?.error 
+           || "No response from IRIS";
  chat.lastChild.remove();
  addAI(reply);
  speechSynthesis.speak(new SpeechSynthesisUtterance(reply));
