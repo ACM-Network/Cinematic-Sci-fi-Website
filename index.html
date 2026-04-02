@@ -1,149 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JARVIS CORE</title>
-
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>JARVIS OS</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Orbitron',sans-serif}
-body{background:black;color:#0ff;overflow:hidden}
-canvas{position:fixed;top:0;left:0;z-index:-1}
+body{background:#000;color:#0ff;overflow:hidden}
+canvas{position:fixed;inset:0;z-index:-1}
 
-.center{
- position:absolute;
- top:50%;
- left:50%;
- transform:translate(-50%,-50%);
- text-align:center;
-}
+.core{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
+.ring{width:320px;height:320px;border-radius:50%;border:2px solid #0ff;box-shadow:0 0 40px #0ff inset,0 0 40px #0ff;animation:spin 10s linear infinite}
+.ring::before{content:'';position:absolute;inset:20px;border-radius:50%;border:2px dashed #0ff;opacity:.7}
+@keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
 
-h1{
- font-size:4rem;
- text-shadow:0 0 20px cyan,0 0 40px blue;
-}
+.hud{position:absolute;top:20px;left:20px;display:flex;gap:12px;align-items:center}
+.badge{padding:8px 12px;border:1px solid #0ff;border-radius:10px;background:rgba(0,255,255,.05);backdrop-filter:blur(8px)}
 
-.circle{
- width:300px;
- height:300px;
- border-radius:50%;
- border:2px solid cyan;
- position:absolute;
- top:50%;
- left:50%;
- transform:translate(-50%,-50%);
- animation:rotate 10s linear infinite;
- box-shadow:0 0 30px cyan;
-}
+.right{position:absolute;top:20px;right:20px;display:flex;flex-direction:column;gap:10px}
+.card{min-width:220px;padding:12px 14px;border:1px solid #0ff;border-radius:12px;background:rgba(0,255,255,.05);backdrop-filter:blur(8px)}
 
-.circle::before{
- content:'';
- position:absolute;
- width:260px;
- height:260px;
- border-radius:50%;
- border:2px dashed #0ff;
- top:50%;
- left:50%;
- transform:translate(-50%,-50%);
-}
+.console{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);width:min(900px,92%);border:1px solid #0ff;border-radius:14px;background:rgba(0,255,255,.05);backdrop-filter:blur(10px);box-shadow:0 0 30px rgba(0,255,255,.2)}
+.console .log{max-height:180px;overflow:auto;padding:12px;font-size:.9rem;color:#9ff}
+.console .input{display:flex;gap:8px;border-top:1px solid rgba(0,255,255,.2);padding:10px}
+.console input{flex:1;padding:10px;border-radius:10px;border:1px solid #0ff;background:#000;color:#0ff}
+.console button{padding:10px 16px;border:none;border-radius:10px;background:#0ff;color:#000;cursor:pointer;box-shadow:0 0 20px #0ff}
 
-@keyframes rotate{
- from{transform:translate(-50%,-50%) rotate(0deg)}
- to{transform:translate(-50%,-50%) rotate(360deg)}
-}
+.wave{position:absolute;bottom:120px;left:50%;transform:translateX(-50%);display:flex;gap:4px}
+.bar{width:4px;height:10px;background:#0ff;animation:beat 1s infinite ease-in-out}
+.bar:nth-child(2){animation-delay:.1s}.bar:nth-child(3){animation-delay:.2s}.bar:nth-child(4){animation-delay:.3s}.bar:nth-child(5){animation-delay:.4s}
+@keyframes beat{0%,100%{height:10px}50%{height:30px}}
 
-.panel{
- position:absolute;
- bottom:40px;
- width:100%;
- display:flex;
- justify-content:center;
- gap:20px;
-}
+.btns{position:absolute;bottom:20px;right:20px;display:flex;gap:10px}
+.btn{padding:10px 14px;border-radius:10px;border:1px solid #0ff;background:rgba(0,255,255,.1);cursor:pointer}
+.btn:hover{box-shadow:0 0 20px #0ff}
 
-.card{
- padding:15px 25px;
- border:1px solid cyan;
- border-radius:10px;
- background:rgba(0,255,255,0.05);
- backdrop-filter:blur(10px);
- transition:0.3s;
-}
-
-.card:hover{
- transform:scale(1.1);
- box-shadow:0 0 20px cyan;
-}
-
-button{
- margin-top:20px;
- padding:10px 20px;
- border:none;
- border-radius:10px;
- background:cyan;
- color:black;
- cursor:pointer;
- box-shadow:0 0 20px cyan;
-}
-
+small{color:#7fe}
 </style>
 </head>
-
 <body>
-
 <canvas id="bg"></canvas>
 
-<div class="circle"></div>
-
-<div class="center">
-  <h1>JARVIS CORE</h1>
-  <button onclick="activate()">ACTIVATE SYSTEM</button>
+<div class="core">
+  <div class="ring"></div>
 </div>
 
-<div class="panel">
-  <div class="card">SYSTEM STATUS</div>
-  <div class="card">AI INTERFACE</div>
-  <div class="card">DATA STREAM</div>
+<div class="hud">
+  <div class="badge" id="time">--:--:--</div>
+  <div class="badge" id="date">-- --- ----</div>
+  <div class="badge" id="status">SYSTEM: OFFLINE</div>
+</div>
+
+<div class="right">
+  <div class="card"><b>DEVICE</b><br><small id="device"></small></div>
+  <div class="card"><b>NETWORK</b><br><small id="net"></small></div>
+  <div class="card"><b>WEATHER</b><br><small id="weather">fetching...</small></div>
+</div>
+
+<div class="wave" id="wave" style="display:none">
+  <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+</div>
+
+<div class="console">
+  <div class="log" id="log"></div>
+  <div class="input">
+    <input id="cmd" placeholder="Type a command (help, time, open youtube, search ... )"/>
+    <button onclick="runCmd()">RUN</button>
+    <button onclick="toggleVoice()">🎤</button>
+  </div>
+</div>
+
+<div class="btns">
+  <div class="btn" onclick="activate()">ACTIVATE</div>
+  <div class="btn" onclick="shutdown()">SHUTDOWN</div>
 </div>
 
 <script>
-// STARFIELD
-const canvas=document.getElementById('bg');
-const ctx=canvas.getContext('2d');
-canvas.width=window.innerWidth;
-canvas.height=window.innerHeight;
+// ===== STARFIELD =====
+const canvas=document.getElementById('bg');const ctx=canvas.getContext('2d');
+function resize(){canvas.width=innerWidth;canvas.height=innerHeight}
+resize();addEventListener('resize',resize);
+let stars=Array.from({length:500},()=>({x:Math.random()*innerWidth- innerWidth/2,y:Math.random()*innerHeight- innerHeight/2,z:Math.random()*innerWidth}));
+function draw(){ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);
+ for(const s of stars){s.z-=2;if(s.z<=1)s.z=innerWidth;const k=128/s.z;const x=s.x*k+canvas.width/2;const y=s.y*k+canvas.height/2;const size=(1-s.z/innerWidth)*3;ctx.fillStyle='#0ff';ctx.fillRect(x,y,size,size)}
+ requestAnimationFrame(draw)};draw();
 
-let stars=[];
-for(let i=0;i<400;i++){
- stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,z:Math.random()*canvas.width});
+// ===== CLOCK =====
+function tick(){const d=new Date();
+ document.getElementById('time').textContent=d.toLocaleTimeString();
+ document.getElementById('date').textContent=d.toDateString();}
+setInterval(tick,1000);tick();
+
+// ===== DEVICE / NETWORK =====
+document.getElementById('device').textContent = navigator.userAgent;
+const net = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+document.getElementById('net').textContent = net ? `${net.effectiveType || ''} ${net.downlink?('- '+net.downlink+'Mb/s'):''}` : 'unknown';
+
+// ===== WEATHER (free open API, no key fallback) =====
+(async ()=>{
+ try{
+  const r=await fetch('https://wttr.in/?format=j1');
+  const j=await r.json();
+  const c=j.current_condition?.[0];
+  if(c) document.getElementById('weather').textContent=`${c.temp_C}°C, ${c.weatherDesc?.[0]?.value}`;
+ }catch(e){document.getElementById('weather').textContent='unavailable'}
+})();
+
+// ===== TTS =====
+function speak(text){const u=new SpeechSynthesisUtterance(text);u.rate=1;u.pitch=1;u.lang='en-US';speechSynthesis.speak(u)}
+
+// ===== VOICE RECOGNITION =====
+let recog;let listening=false;
+function initRec(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR) return null; const r=new SR(); r.continuous=false; r.lang='en-US'; r.onresult=(e)=>{const t=e.results[0][0].transcript; log('> '+t); handle(t)}; r.onend=()=>{if(listening) r.start()}; return r}
+recog=initRec();
+function toggleVoice(){if(!recog){alert('Speech not supported');return} listening=!listening; document.getElementById('wave').style.display=listening?'flex':'none'; if(listening){recog.start(); speak('Listening');} else {recog.stop();}}
+
+// ===== CONSOLE =====
+const logEl=document.getElementById('log');
+function log(t){const p=document.createElement('div');p.textContent=t;logEl.appendChild(p);logEl.scrollTop=logEl.scrollHeight}
+function runCmd(){const v=document.getElementById('cmd').value.trim(); if(!v) return; log('> '+v); handle(v); document.getElementById('cmd').value=''}
+
+function handle(v){v=v.toLowerCase();
+ if(v.includes('help')){log('Commands: time, open youtube, open google, search <q>, who are you, clear'); speak('Here are some commands');}
+ else if(v.includes('time')){speak(new Date().toLocaleTimeString())}
+ else if(v.includes('open youtube')){open('https://youtube.com'); speak('Opening YouTube')}
+ else if(v.includes('open google')){open('https://google.com'); speak('Opening Google')}
+ else if(v.startsWith('search ')){const q=v.replace('search ',''); open('https://www.google.com/search?q='+encodeURIComponent(q)); speak('Searching '+q)}
+ else if(v.includes('who are you')){speak('I am your Jarvis interface');}
+ else if(v.includes('clear')){logEl.innerHTML=''}
+ else{ speak('Command not recognized'); }
 }
 
-function draw(){
- ctx.fillStyle="black";
- ctx.fillRect(0,0,canvas.width,canvas.height);
- for(let s of stars){
-  s.z-=2;
-  if(s.z<=0)s.z=canvas.width;
-  let k=128/s.z;
-  let x=s.x*k+canvas.width/2;
-  let y=s.y*k+canvas.height/2;
-  let size=(1-s.z/canvas.width)*4;
-  ctx.fillStyle="cyan";
-  ctx.fillRect(x,y,size,size);
- }
- requestAnimationFrame(draw);
-}
-draw();
+// ===== SYSTEM STATE =====
+let active=false;
+function activate(){active=true; document.getElementById('status').textContent='SYSTEM: ONLINE'; speak('System online');}
+function shutdown(){active=false; document.getElementById('status').textContent='SYSTEM: OFFLINE'; speak('System offline');}
 
-function activate(){
- alert("⚡ JARVIS ONLINE");
- document.body.style.background="radial-gradient(circle,#001,#000)";
-}
+// keyboard enter
+addEventListener('keydown',e=>{ if(e.key==='Enter') runCmd(); });
 
 </script>
-
 </body>
 </html>
