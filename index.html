@@ -3,114 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JARVIS AI ULTRA</title>
+<title>IRIS AI</title>
+<link rel="stylesheet" href="style.css">
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Orbitron',sans-serif}
-body{background:#020617;color:#0ff;overflow:hidden}
-canvas{position:fixed;top:0;left:0;z-index:-1}
-
-#boot{position:fixed;inset:0;background:black;display:flex;justify-content:center;align-items:center;z-index:999}
-
-.core{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
-.ring{width:260px;height:260px;border-radius:50%;border:2px solid cyan;animation:spin 6s linear infinite;box-shadow:0 0 40px cyan}
-@keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
-
-.panel{position:absolute;padding:15px;border-radius:12px;background:rgba(0,255,255,0.05);border:1px solid rgba(0,255,255,0.3);backdrop-filter:blur(15px)}
-#chatPanel{bottom:20px;left:50%;transform:translateX(-50%);width:90%;max-width:900px}
-
-.chat{height:250px;overflow:auto;padding:10px}
-.msg{margin:6px 0}
-.user{color:#0ff}
-.ai{color:#9ff}
-
-input{width:70%;padding:10px;background:#000;border:1px solid cyan;color:#0ff;border-radius:8px}
-button{padding:10px;border:none;background:cyan;color:#000;border-radius:8px;cursor:pointer}
-
-</style>
 </head>
-
 <body>
 
-<div id="boot"><h1>Initializing Jarvis AI...</h1></div>
-<canvas id="bg"></canvas>
-<div class="core"><div class="ring"></div></div>
-
-<div id="chatPanel" class="panel">
-<div class="chat" id="chat"></div>
-<input id="input" placeholder="Ask anything...">
-<button onclick="sendMsg()">Send</button>
-<button onclick="startVoice()">🎤</button>
+<div id="boot">
+  <h1>IRIS INITIALIZING...</h1>
 </div>
 
-<script>
-setTimeout(()=>{
- boot.style.display='none';
- speak("Welcome back sir. Jarvis with AI is online.");
- addAI("Welcome back sir. Jarvis with AI is online.");
-},2000);
+<canvas id="bg"></canvas>
 
-// STARFIELD
-const c=bg,ctx=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;
-let stars=Array.from({length:300},()=>({x:Math.random()*c.width,y:Math.random()*c.height,z:Math.random()*c.width}))
-function draw(){ctx.fillStyle='#000';ctx.fillRect(0,0,c.width,c.height);
-for(let s of stars){s.z--;if(s.z<=0)s.z=c.width;let k=128/s.z,x=s.x*k+c.width/2,y=s.y*k+c.height/2;ctx.fillStyle='cyan';ctx.fillRect(x,y,2,2)}requestAnimationFrame(draw)}draw()
+<div class="core"></div>
 
-// CHAT
-function addUser(t){chat.innerHTML+=`<div class='msg user'>You: ${t}</div>`}
-function addAI(t){chat.innerHTML+=`<div class='msg ai'>Jarvis: ${t}</div>`}
+<div class="chat-container">
+  <div id="chat"></div>
+  <div class="input-box">
+    <input id="input" placeholder="Talk to IRIS...">
+    <button onclick="sendMsg()">Send</button>
+    <button onclick="startVoice()">🎤</button>
+  </div>
+</div>
 
-async function sendMsg(){
- let t=input.value.trim();
- if(!t)return;
- addUser(t);
- input.value='';
-
- addAI("Thinking...");
-
- try{
-  const res=await fetch("https://api.openai.com/v1/chat/completions",{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      "Authorization":"Bearer YOUR_OPENAI_API_KEY"
-    },
-    body:JSON.stringify({
-      model:"gpt-4o-mini",
-      messages:[{role:"user",content:t}]
-    })
-  });
-
-  const data=await res.json();
-  const reply=data.choices?.[0]?.message?.content || "No response";
-
-  chat.lastChild.remove();
-  addAI(reply);
-  speak(reply);
-
- }catch(e){
-  chat.lastChild.remove();
-  addAI("Error connecting to AI");
- }
-}
-
-// VOICE
-function startVoice(){
- const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!SR){alert('Not supported');return}
- let r=new SR();r.lang='en-US';
- r.onresult=e=>{
-  input.value=e.results[0][0].transcript;
-  sendMsg();
- };
- r.start();
-}
-
-// SPEAK
-function speak(t){speechSynthesis.speak(new SpeechSynthesisUtterance(t))}
-
-</script>
-
+<script src="script.js"></script>
 </body>
 </html>
