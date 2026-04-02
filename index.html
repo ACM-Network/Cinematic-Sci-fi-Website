@@ -3,159 +3,159 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Neon Void Cinematic</title>
+<title>FocusX - Cinematic Productivity</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Orbitron',sans-serif}
 body{background:#000;color:#fff;overflow:hidden}
-
 canvas{position:fixed;top:0;left:0;z-index:-1}
 
-.hero{
-  height:100vh;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  text-align:center;
-}
+.container{padding:20px;text-align:center}
 
-.hero h1{
-  font-size:5rem;
-  letter-spacing:8px;
-  animation:glitch 2s infinite alternate;
-}
+h1{font-size:3rem;margin-bottom:10px;animation:glow 2s infinite alternate}
+@keyframes glow{from{text-shadow:0 0 10px cyan}to{text-shadow:0 0 30px purple}}
 
-@keyframes glitch{
-  0%{text-shadow:2px 2px red,-2px -2px blue}
-  50%{text-shadow:-2px -2px red,2px 2px blue}
-  100%{text-shadow:2px -2px red,-2px 2px blue}
-}
-
-.hero p{margin-top:20px;color:#aaa}
-
-.btn{
-  margin-top:30px;
-  padding:15px 40px;
+input{
+  padding:10px;
+  width:60%;
   border:none;
-  border-radius:30px;
-  background:linear-gradient(45deg,#9333ea,#06b6d4);
-  cursor:pointer;
+  border-radius:10px;
+  margin-top:20px;
+}
+
+button{
+  padding:10px 20px;
+  border:none;
+  border-radius:10px;
+  margin-left:10px;
+  background:linear-gradient(45deg,cyan,purple);
   color:#fff;
-  box-shadow:0 0 20px #9333ea;
-  transition:0.3s;
+  cursor:pointer;
 }
 
-.btn:hover{
-  transform:scale(1.2);
-  box-shadow:0 0 60px #06b6d4;
+.tasks{
+  margin-top:30px;
+  max-height:300px;
+  overflow-y:auto;
 }
 
-.features{
-  position:absolute;
-  bottom:50px;
-  width:100%;
+.task{
+  margin:10px auto;
+  padding:10px;
+  width:60%;
+  background:rgba(255,255,255,0.1);
+  border-radius:10px;
   display:flex;
-  justify-content:center;
-  gap:40px;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.timer{
+  margin-top:30px;
+  font-size:2rem;
 }
 
 .card{
-  padding:20px;
-  border-radius:20px;
-  backdrop-filter:blur(20px);
+  margin-top:20px;
+  padding:15px;
   background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.1);
-  transition:0.3s;
+  border-radius:15px;
 }
-
-.card:hover{
-  transform:translateY(-10px) scale(1.1);
-  box-shadow:0 0 30px cyan;
-}
-
-footer{position:absolute;bottom:10px;width:100%;text-align:center;color:#666}
 
 </style>
 </head>
-
 <body>
 
-<canvas id="space"></canvas>
+<canvas id="bg"></canvas>
 
-<section class="hero">
-<h1>NEON VOID</h1>
-<p>Enter a cinematic universe beyond space-time</p>
-<button class="btn" onclick="enterUniverse()">ENTER</button>
-</section>
+<div class="container">
+  <h1>FOCUS X</h1>
+  <p>Study. Focus. Execute.</p>
 
-<div class="features">
-<div class="card">Quantum Travel</div>
-<div class="card">AI Civilizations</div>
-<div class="card">Time Collapse</div>
+  <div>
+    <input id="taskInput" placeholder="Enter your task...">
+    <button onclick="addTask()">Add</button>
+  </div>
+
+  <div class="tasks" id="tasks"></div>
+
+  <div class="card">
+    <h2>Pomodoro Timer</h2>
+    <div class="timer" id="timer">25:00</div>
+    <button onclick="startTimer()">Start</button>
+    <button onclick="resetTimer()">Reset</button>
+  </div>
 </div>
 
-<footer>© 2099 Neon Void</footer>
-
 <script>
-// STARFIELD + PARTICLE SYSTEM (CINEMATIC VFX)
-const canvas = document.getElementById('space');
+// STARFIELD BACKGROUND
+const canvas = document.getElementById('bg');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-let stars = [];
-for(let i=0;i<300;i++){
-  stars.push({
-    x:Math.random()*canvas.width,
-    y:Math.random()*canvas.height,
-    z:Math.random()*canvas.width
-  });
+let stars=[];
+for(let i=0;i<200;i++){
+ stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,z:Math.random()*canvas.width});
 }
 
-function drawStars(){
-  ctx.fillStyle="black";
-  ctx.fillRect(0,0,canvas.width,canvas.height);
+function draw(){
+ ctx.fillStyle="black";
+ ctx.fillRect(0,0,canvas.width,canvas.height);
+ for(let s of stars){
+  s.z--;
+  if(s.z<=0)s.z=canvas.width;
+  let k=128/s.z;
+  let x=s.x*k+canvas.width/2;
+  let y=s.y*k+canvas.height/2;
+  let size=(1-s.z/canvas.width)*3;
+  ctx.fillStyle="white";
+  ctx.fillRect(x,y,size,size);
+ }
+ requestAnimationFrame(draw);
+}
+draw();
 
-  for(let i=0;i<stars.length;i++){
-    let star = stars[i];
-    star.z--;
+// TASK SYSTEM
+function addTask(){
+ let input=document.getElementById('taskInput');
+ let task=input.value;
+ if(task==='')return;
 
-    if(star.z<=0){
-      star.z = canvas.width;
-    }
-
-    let k = 128.0 / star.z;
-    let px = star.x * k + canvas.width/2;
-    let py = star.y * k + canvas.height/2;
-
-    if(px>=0 && px<=canvas.width && py>=0 && py<=canvas.height){
-      let size = (1 - star.z/canvas.width) * 3;
-      ctx.fillStyle = "white";
-      ctx.fillRect(px,py,size,size);
-    }
-  }
+ let div=document.createElement('div');
+ div.className='task';
+ div.innerHTML=`${task} <button onclick="this.parentElement.remove()">X</button>`;
+ document.getElementById('tasks').appendChild(div);
+ input.value='';
 }
 
-function animate(){
-  drawStars();
-  requestAnimationFrame(animate);
+// TIMER
+let time=1500;
+let interval;
+
+function startTimer(){
+ if(interval)return;
+ interval=setInterval(()=>{
+  if(time<=0){clearInterval(interval);interval=null;return}
+  time--;
+  updateTimer();
+ },1000);
 }
 
-animate();
+function resetTimer(){
+ clearInterval(interval);
+ interval=null;
+ time=1500;
+ updateTimer();
+}
 
-// RESIZE
-window.addEventListener('resize',()=>{
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-});
-
-// BUTTON FX
-function enterUniverse(){
-  document.body.style.background = "radial-gradient(circle,#020024,#090979,#00d4ff)";
-  alert("🚀 Entered Cinematic Mode");
+function updateTimer(){
+ let m=Math.floor(time/60);
+ let s=time%60;
+ document.getElementById('timer').innerText=
+  `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
 }
 
 </script>
