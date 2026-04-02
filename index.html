@@ -3,183 +3,167 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JARVIS AI SYSTEM</title>
+<title>JARVIS ULTIMATE</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Orbitron',sans-serif}
-body{background:black;color:#0ff;overflow:hidden}
+body{background:#020617;color:#0ff;overflow:hidden}
 canvas{position:fixed;top:0;left:0;z-index:-1}
 
-/* BOOT SCREEN */
-#boot{
- position:fixed;
- inset:0;
- background:black;
- display:flex;
- justify-content:center;
- align-items:center;
- flex-direction:column;
- z-index:999;
- color:#0ff;
-}
+/* BOOT */
+#boot{position:fixed;inset:0;background:black;display:flex;justify-content:center;align-items:center;flex-direction:column;z-index:999}
+#boot h1{animation:glow 1.5s infinite alternate}
+@keyframes glow{from{text-shadow:0 0 10px cyan}to{text-shadow:0 0 40px blue}}
 
 /* CORE */
 .core{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
-.ring{width:300px;height:300px;border-radius:50%;border:2px solid cyan;animation:spin 8s linear infinite;box-shadow:0 0 40px cyan}
+.ring{
+ width:300px;height:300px;border-radius:50%;
+ border:2px solid cyan;
+ box-shadow:0 0 60px cyan, inset 0 0 40px blue;
+ animation:spin 8s linear infinite
+}
 @keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
 
 /* PANELS */
 .panel{
  position:absolute;
  padding:15px;
- border:1px solid cyan;
- border-radius:10px;
+ border-radius:12px;
+ border:1px solid rgba(0,255,255,0.3);
  background:rgba(0,255,255,0.05);
+ backdrop-filter:blur(15px);
+ box-shadow:0 0 20px rgba(0,255,255,0.2);
  cursor:move;
+ transition:0.3s;
 }
+.panel:hover{box-shadow:0 0 40px cyan}
 
 #ai{top:20px;left:20px}
 #stats{top:20px;right:20px}
-#map{bottom:100px;left:20px}
-#news{bottom:100px;right:20px}
+#map{bottom:120px;left:20px}
+#news{bottom:120px;right:20px}
 
 /* CONSOLE */
 .console{
- position:absolute;
- bottom:20px;
- left:50%;
- transform:translateX(-50%);
- width:80%;
- border:1px solid cyan;
- padding:10px;
+ position:absolute;bottom:20px;left:50%;transform:translateX(-50%);
+ width:90%;max-width:900px;
+ border:1px solid rgba(0,255,255,0.3);
+ border-radius:12px;
  background:rgba(0,255,255,0.05);
+ backdrop-filter:blur(15px);
 }
 
-input{width:80%;padding:10px;background:black;border:1px solid cyan;color:#0ff}
-button{padding:10px;background:cyan;border:none;cursor:pointer}
+.log{height:150px;overflow:auto;padding:10px;color:#9ff}
+
+input{
+ width:75%;padding:10px;border-radius:8px;
+ background:#000;border:1px solid cyan;color:#0ff
+}
+button{
+ padding:10px 15px;border:none;border-radius:8px;
+ background:linear-gradient(45deg,cyan,blue);
+ color:#000;cursor:pointer;margin-left:5px
+}
+button:hover{box-shadow:0 0 20px cyan}
+
+.wave{display:none;justify-content:center;gap:4px;margin:10px}
+.bar{width:4px;height:10px;background:cyan;animation:wave 1s infinite}
+@keyframes wave{50%{height:25px}}
 
 </style>
 </head>
+
 <body>
 
 <div id="boot">
-<h1>INITIALIZING JARVIS...</h1>
+<h1>JARVIS INITIALIZING...</h1>
 <p>Loading Systems...</p>
 </div>
 
 <canvas id="bg"></canvas>
 
-<div class="core">
-<div class="ring"></div>
-</div>
+<div class="core"><div class="ring"></div></div>
 
-<div id="ai" class="panel">AI CORE<br><small id="response">Ready...</small></div>
+<div id="ai" class="panel">AI CORE<br><small id="response">Ready</small></div>
 <div id="stats" class="panel">CPU: <span id="cpu"></span>%<br>RAM: <span id="ram"></span>%</div>
-<div id="map" class="panel">🌍 Maps<br><iframe src="https://maps.google.com/maps?q=India&output=embed" width="200" height="150"></iframe></div>
-<div id="news" class="panel">📰 News<br><small id="newsData">Loading...</small></div>
+<div id="map" class="panel">🌍<br><iframe src="https://maps.google.com/maps?q=India&output=embed" width="220" height="150"></iframe></div>
+<div id="news" class="panel">📰<br><small id="newsData">Loading...</small></div>
 
 <div class="console">
-<input id="cmd" placeholder="Say or type command...">
+<div class="log" id="log"></div>
+<div style="padding:10px">
+<input id="cmd" placeholder="Type or say command">
 <button onclick="runCmd()">Run</button>
+<button onclick="startVoice()">🎤</button>
+</div>
+<div class="wave" id="wave">
+<div class="bar"></div><div class="bar"></div><div class="bar"></div>
+</div>
 </div>
 
 <script>
 // BOOT
-setTimeout(()=>{document.getElementById('boot').style.display='none'},3000);
+setTimeout(()=>boot.style.display='none',2500)
 
 // STARFIELD
-const c=document.getElementById('bg');const ctx=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;
-let stars=Array.from({length:300},()=>({x:Math.random()*c.width,y:Math.random()*c.height,z:Math.random()*c.width}));
-function draw(){ctx.fillStyle="black";ctx.fillRect(0,0,c.width,c.height);
-for(let s of stars){s.z--;if(s.z<=0)s.z=c.width;let k=128/s.z;let x=s.x*k+c.width/2;let y=s.y*k+c.height/2;ctx.fillStyle="cyan";ctx.fillRect(x,y,2,2);}requestAnimationFrame(draw)}draw();
+const c=bg,ctx=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;
+let stars=Array.from({length:400},()=>({x:Math.random()*c.width,y:Math.random()*c.height,z:Math.random()*c.width}))
+function draw(){ctx.fillStyle='#000';ctx.fillRect(0,0,c.width,c.height);
+for(let s of stars){s.z-=2;if(s.z<=0)s.z=c.width;
+let k=128/s.z,x=s.x*k+c.width/2,y=s.y*k+c.height/2;
+ctx.fillStyle='cyan';ctx.fillRect(x,y,2,2)}requestAnimationFrame(draw)}draw()
 
-// FAKE STATS
+// DRAG
+for(let p of document.querySelectorAll('.panel')){
+let d=false,ox,oy;
+p.onmousedown=e=>{d=true;ox=e.offsetX;oy=e.offsetY}
+window.onmouseup=()=>d=false
+window.onmousemove=e=>{if(d){p.style.left=e.clientX-ox+'px';p.style.top=e.clientY-oy+'px'}}}
+
+// STATS
 setInterval(()=>{
- document.getElementById('cpu').innerText=Math.floor(Math.random()*100);
- document.getElementById('ram').innerText=Math.floor(Math.random()*100);
-},1000);
+cpu.innerText=Math.floor(Math.random()*100)
+ram.innerText=Math.floor(Math.random()*100)
+},1000)
 
 // NEWS
 fetch('https://api.currentsapi.services/v1/latest-news?language=en&apiKey=demo')
-.then(r=>r.json()).then(d=>{
- if(d.news) document.getElementById('newsData').innerText=d.news[0].title;
-}).catch(()=>{document.getElementById('newsData').innerText='Unavailable'});
+.then(r=>r.json()).then(d=>newsData.innerText=d.news?.[0]?.title||'Unavailable')
+.catch(()=>newsData.innerText='Unavailable')
 
-// DRAG PANELS
-document.querySelectorAll('.panel').forEach(panel=>{
- let offsetX,offsetY,isDown=false;
- panel.onmousedown=(e)=>{isDown=true;offsetX=e.offsetX;offsetY=e.offsetY}
- document.onmouseup=()=>isDown=false;
- document.onmousemove=(e)=>{
-  if(isDown){panel.style.left=e.clientX-offsetX+'px';panel.style.top=e.clientY-offsetY+'px'}
- }
-});
+// LOG
+function log(t){let d=document.createElement('div');d.textContent=t;logEl.appendChild(d);logEl.scrollTop=9999}
 
-// COMMANDS
+// COMMAND
 function runCmd(){
- let v=document.getElementById('cmd').value.toLowerCase();
- let res=document.getElementById('response');
-
- if(v.includes('hello')) res.innerText='Hello Sir';
- else if(v.includes('time')) res.innerText=new Date().toLocaleTimeString();
- else if(v.includes('open youtube')) window.open('https://youtube.com');
- else if(v.includes('search')) window.open('https://google.com/search?q='+v.replace('search',''));
- else res.innerText='Unknown Command';
+let v=cmd.value.toLowerCase();
+log('> '+v)
+if(v.includes('time')) speak(new Date().toLocaleTimeString())
+else if(v.includes('youtube')) open('https://youtube.com')
+else if(v.includes('search')) open('https://google.com/search?q='+v.replace('search',''))
+else speak('Unknown command')
 }
 
-// ===== VOICE + WAKE WORD (Hey Jarvis) =====
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-let recognizer, isActive=false;
+// SPEAK
+function speak(t){speechSynthesis.speak(new SpeechSynthesisUtterance(t));response.innerText=t}
 
-function initVoice(){
- if(!SR){alert('Speech Recognition not supported');return}
- recognizer=new SR();
- recognizer.continuous=true;
- recognizer.interimResults=true;
- recognizer.lang='en-US';
-
- recognizer.onresult=(e)=>{
-  let transcript='';
-  for(let i=e.resultIndex;i<e.results.length;i++){
-    transcript+=e.results[i][0].transcript.toLowerCase();
-  }
-
-  // WAKE WORD DETECTION
-  if(transcript.includes('hey jarvis')){
-    isActive=true;
-    speak('Yes Sir');
-    document.getElementById('response').innerText='Listening...';
-    return;
-  }
-
-  // COMMAND ONLY AFTER WAKE WORD
-  if(isActive){
-    document.getElementById('cmd').value=transcript;
-    runCmd();
-    isActive=false;
-  }
- };
-
- recognizer.onerror=()=>{
-   recognizer.stop();
-   setTimeout(()=>recognizer.start(),1000);
- };
-
- recognizer.onend=()=>{
-   setTimeout(()=>recognizer.start(),500);
- };
-
- recognizer.start();
+// VOICE (RELIABLE START)
+let rec,active=false
+function startVoice(){
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition
+if(!SR){alert('Not supported');return}
+rec=new SR();rec.continuous=true;rec.lang='en-US'
+wave.style.display='flex'
+rec.onresult=e=>{
+let t=e.results[e.results.length-1][0].transcript.toLowerCase()
+console.log(t)
+if(t.includes('hey jarvis')){active=true;speak('Yes Sir');return}
+if(active){cmd.value=t;runCmd();active=false}
 }
-
-// TEXT TO SPEECH
-function speak(text){
- const u=new SpeechSynthesisUtterance(text);
- u.lang='en-US';
- speechSynthesis.speak(u);
+rec.start()
 }
-
-initVoice();
 
 </script>
 
