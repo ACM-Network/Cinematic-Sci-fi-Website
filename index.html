@@ -1,145 +1,146 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>JARVIS OS</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JARVIS AI SYSTEM</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Orbitron',sans-serif}
-body{background:#000;color:#0ff;overflow:hidden}
-canvas{position:fixed;inset:0;z-index:-1}
+body{background:black;color:#0ff;overflow:hidden}
+canvas{position:fixed;top:0;left:0;z-index:-1}
 
+/* BOOT SCREEN */
+#boot{
+ position:fixed;
+ inset:0;
+ background:black;
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ flex-direction:column;
+ z-index:999;
+ color:#0ff;
+}
+
+/* CORE */
 .core{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
-.ring{width:320px;height:320px;border-radius:50%;border:2px solid #0ff;box-shadow:0 0 40px #0ff inset,0 0 40px #0ff;animation:spin 10s linear infinite}
-.ring::before{content:'';position:absolute;inset:20px;border-radius:50%;border:2px dashed #0ff;opacity:.7}
+.ring{width:300px;height:300px;border-radius:50%;border:2px solid cyan;animation:spin 8s linear infinite;box-shadow:0 0 40px cyan}
 @keyframes spin{to{transform:translate(-50%,-50%) rotate(360deg)}}
 
-.hud{position:absolute;top:20px;left:20px;display:flex;gap:12px;align-items:center}
-.badge{padding:8px 12px;border:1px solid #0ff;border-radius:10px;background:rgba(0,255,255,.05);backdrop-filter:blur(8px)}
+/* PANELS */
+.panel{
+ position:absolute;
+ padding:15px;
+ border:1px solid cyan;
+ border-radius:10px;
+ background:rgba(0,255,255,0.05);
+ cursor:move;
+}
 
-.right{position:absolute;top:20px;right:20px;display:flex;flex-direction:column;gap:10px}
-.card{min-width:220px;padding:12px 14px;border:1px solid #0ff;border-radius:12px;background:rgba(0,255,255,.05);backdrop-filter:blur(8px)}
+#ai{top:20px;left:20px}
+#stats{top:20px;right:20px}
+#map{bottom:100px;left:20px}
+#news{bottom:100px;right:20px}
 
-.console{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);width:min(900px,92%);border:1px solid #0ff;border-radius:14px;background:rgba(0,255,255,.05);backdrop-filter:blur(10px);box-shadow:0 0 30px rgba(0,255,255,.2)}
-.console .log{max-height:180px;overflow:auto;padding:12px;font-size:.9rem;color:#9ff}
-.console .input{display:flex;gap:8px;border-top:1px solid rgba(0,255,255,.2);padding:10px}
-.console input{flex:1;padding:10px;border-radius:10px;border:1px solid #0ff;background:#000;color:#0ff}
-.console button{padding:10px 16px;border:none;border-radius:10px;background:#0ff;color:#000;cursor:pointer;box-shadow:0 0 20px #0ff}
+/* CONSOLE */
+.console{
+ position:absolute;
+ bottom:20px;
+ left:50%;
+ transform:translateX(-50%);
+ width:80%;
+ border:1px solid cyan;
+ padding:10px;
+ background:rgba(0,255,255,0.05);
+}
 
-.wave{position:absolute;bottom:120px;left:50%;transform:translateX(-50%);display:flex;gap:4px}
-.bar{width:4px;height:10px;background:#0ff;animation:beat 1s infinite ease-in-out}
-.bar:nth-child(2){animation-delay:.1s}.bar:nth-child(3){animation-delay:.2s}.bar:nth-child(4){animation-delay:.3s}.bar:nth-child(5){animation-delay:.4s}
-@keyframes beat{0%,100%{height:10px}50%{height:30px}}
+input{width:80%;padding:10px;background:black;border:1px solid cyan;color:#0ff}
+button{padding:10px;background:cyan;border:none;cursor:pointer}
 
-.btns{position:absolute;bottom:20px;right:20px;display:flex;gap:10px}
-.btn{padding:10px 14px;border-radius:10px;border:1px solid #0ff;background:rgba(0,255,255,.1);cursor:pointer}
-.btn:hover{box-shadow:0 0 20px #0ff}
-
-small{color:#7fe}
 </style>
 </head>
 <body>
+
+<div id="boot">
+<h1>INITIALIZING JARVIS...</h1>
+<p>Loading Systems...</p>
+</div>
+
 <canvas id="bg"></canvas>
 
 <div class="core">
-  <div class="ring"></div>
+<div class="ring"></div>
 </div>
 
-<div class="hud">
-  <div class="badge" id="time">--:--:--</div>
-  <div class="badge" id="date">-- --- ----</div>
-  <div class="badge" id="status">SYSTEM: OFFLINE</div>
-</div>
-
-<div class="right">
-  <div class="card"><b>DEVICE</b><br><small id="device"></small></div>
-  <div class="card"><b>NETWORK</b><br><small id="net"></small></div>
-  <div class="card"><b>WEATHER</b><br><small id="weather">fetching...</small></div>
-</div>
-
-<div class="wave" id="wave" style="display:none">
-  <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
-</div>
+<div id="ai" class="panel">AI CORE<br><small id="response">Ready...</small></div>
+<div id="stats" class="panel">CPU: <span id="cpu"></span>%<br>RAM: <span id="ram"></span>%</div>
+<div id="map" class="panel">🌍 Maps<br><iframe src="https://maps.google.com/maps?q=India&output=embed" width="200" height="150"></iframe></div>
+<div id="news" class="panel">📰 News<br><small id="newsData">Loading...</small></div>
 
 <div class="console">
-  <div class="log" id="log"></div>
-  <div class="input">
-    <input id="cmd" placeholder="Type a command (help, time, open youtube, search ... )"/>
-    <button onclick="runCmd()">RUN</button>
-    <button onclick="toggleVoice()">🎤</button>
-  </div>
-</div>
-
-<div class="btns">
-  <div class="btn" onclick="activate()">ACTIVATE</div>
-  <div class="btn" onclick="shutdown()">SHUTDOWN</div>
+<input id="cmd" placeholder="Say or type command...">
+<button onclick="runCmd()">Run</button>
 </div>
 
 <script>
-// ===== STARFIELD =====
-const canvas=document.getElementById('bg');const ctx=canvas.getContext('2d');
-function resize(){canvas.width=innerWidth;canvas.height=innerHeight}
-resize();addEventListener('resize',resize);
-let stars=Array.from({length:500},()=>({x:Math.random()*innerWidth- innerWidth/2,y:Math.random()*innerHeight- innerHeight/2,z:Math.random()*innerWidth}));
-function draw(){ctx.fillStyle='#000';ctx.fillRect(0,0,canvas.width,canvas.height);
- for(const s of stars){s.z-=2;if(s.z<=1)s.z=innerWidth;const k=128/s.z;const x=s.x*k+canvas.width/2;const y=s.y*k+canvas.height/2;const size=(1-s.z/innerWidth)*3;ctx.fillStyle='#0ff';ctx.fillRect(x,y,size,size)}
- requestAnimationFrame(draw)};draw();
+// BOOT
+setTimeout(()=>{document.getElementById('boot').style.display='none'},3000);
 
-// ===== CLOCK =====
-function tick(){const d=new Date();
- document.getElementById('time').textContent=d.toLocaleTimeString();
- document.getElementById('date').textContent=d.toDateString();}
-setInterval(tick,1000);tick();
+// STARFIELD
+const c=document.getElementById('bg');const ctx=c.getContext('2d');c.width=innerWidth;c.height=innerHeight;
+let stars=Array.from({length:300},()=>({x:Math.random()*c.width,y:Math.random()*c.height,z:Math.random()*c.width}));
+function draw(){ctx.fillStyle="black";ctx.fillRect(0,0,c.width,c.height);
+for(let s of stars){s.z--;if(s.z<=0)s.z=c.width;let k=128/s.z;let x=s.x*k+c.width/2;let y=s.y*k+c.height/2;ctx.fillStyle="cyan";ctx.fillRect(x,y,2,2);}requestAnimationFrame(draw)}draw();
 
-// ===== DEVICE / NETWORK =====
-document.getElementById('device').textContent = navigator.userAgent;
-const net = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-document.getElementById('net').textContent = net ? `${net.effectiveType || ''} ${net.downlink?('- '+net.downlink+'Mb/s'):''}` : 'unknown';
+// FAKE STATS
+setInterval(()=>{
+ document.getElementById('cpu').innerText=Math.floor(Math.random()*100);
+ document.getElementById('ram').innerText=Math.floor(Math.random()*100);
+},1000);
 
-// ===== WEATHER (free open API, no key fallback) =====
-(async ()=>{
- try{
-  const r=await fetch('https://wttr.in/?format=j1');
-  const j=await r.json();
-  const c=j.current_condition?.[0];
-  if(c) document.getElementById('weather').textContent=`${c.temp_C}°C, ${c.weatherDesc?.[0]?.value}`;
- }catch(e){document.getElementById('weather').textContent='unavailable'}
-})();
+// NEWS
+fetch('https://api.currentsapi.services/v1/latest-news?language=en&apiKey=demo')
+.then(r=>r.json()).then(d=>{
+ if(d.news) document.getElementById('newsData').innerText=d.news[0].title;
+}).catch(()=>{document.getElementById('newsData').innerText='Unavailable'});
 
-// ===== TTS =====
-function speak(text){const u=new SpeechSynthesisUtterance(text);u.rate=1;u.pitch=1;u.lang='en-US';speechSynthesis.speak(u)}
+// DRAG PANELS
+document.querySelectorAll('.panel').forEach(panel=>{
+ let offsetX,offsetY,isDown=false;
+ panel.onmousedown=(e)=>{isDown=true;offsetX=e.offsetX;offsetY=e.offsetY}
+ document.onmouseup=()=>isDown=false;
+ document.onmousemove=(e)=>{
+  if(isDown){panel.style.left=e.clientX-offsetX+'px';panel.style.top=e.clientY-offsetY+'px'}
+ }
+});
 
-// ===== VOICE RECOGNITION =====
-let recog;let listening=false;
-function initRec(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR) return null; const r=new SR(); r.continuous=false; r.lang='en-US'; r.onresult=(e)=>{const t=e.results[0][0].transcript; log('> '+t); handle(t)}; r.onend=()=>{if(listening) r.start()}; return r}
-recog=initRec();
-function toggleVoice(){if(!recog){alert('Speech not supported');return} listening=!listening; document.getElementById('wave').style.display=listening?'flex':'none'; if(listening){recog.start(); speak('Listening');} else {recog.stop();}}
+// COMMANDS
+function runCmd(){
+ let v=document.getElementById('cmd').value.toLowerCase();
+ let res=document.getElementById('response');
 
-// ===== CONSOLE =====
-const logEl=document.getElementById('log');
-function log(t){const p=document.createElement('div');p.textContent=t;logEl.appendChild(p);logEl.scrollTop=logEl.scrollHeight}
-function runCmd(){const v=document.getElementById('cmd').value.trim(); if(!v) return; log('> '+v); handle(v); document.getElementById('cmd').value=''}
-
-function handle(v){v=v.toLowerCase();
- if(v.includes('help')){log('Commands: time, open youtube, open google, search <q>, who are you, clear'); speak('Here are some commands');}
- else if(v.includes('time')){speak(new Date().toLocaleTimeString())}
- else if(v.includes('open youtube')){open('https://youtube.com'); speak('Opening YouTube')}
- else if(v.includes('open google')){open('https://google.com'); speak('Opening Google')}
- else if(v.startsWith('search ')){const q=v.replace('search ',''); open('https://www.google.com/search?q='+encodeURIComponent(q)); speak('Searching '+q)}
- else if(v.includes('who are you')){speak('I am your Jarvis interface');}
- else if(v.includes('clear')){logEl.innerHTML=''}
- else{ speak('Command not recognized'); }
+ if(v.includes('hello')) res.innerText='Hello Sir';
+ else if(v.includes('time')) res.innerText=new Date().toLocaleTimeString();
+ else if(v.includes('open youtube')) window.open('https://youtube.com');
+ else if(v.includes('search')) window.open('https://google.com/search?q='+v.replace('search',''));
+ else res.innerText='Unknown Command';
 }
 
-// ===== SYSTEM STATE =====
-let active=false;
-function activate(){active=true; document.getElementById('status').textContent='SYSTEM: ONLINE'; speak('System online');}
-function shutdown(){active=false; document.getElementById('status').textContent='SYSTEM: OFFLINE'; speak('System offline');}
-
-// keyboard enter
-addEventListener('keydown',e=>{ if(e.key==='Enter') runCmd(); });
+// VOICE (basic)
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(SR){
+ let rec=new SR();
+ rec.continuous=true;
+ rec.onresult=e=>{
+  let t=e.results[e.results.length-1][0].transcript;
+  document.getElementById('cmd').value=t;
+  runCmd();
+ }
+ rec.start();
+}
 
 </script>
+
 </body>
 </html>
