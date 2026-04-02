@@ -3,101 +3,121 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FocusX - Cinematic Productivity</title>
+<title>JARVIS CORE</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Orbitron',sans-serif}
-body{background:#000;color:#fff;overflow:hidden}
+body{background:black;color:#0ff;overflow:hidden}
 canvas{position:fixed;top:0;left:0;z-index:-1}
 
-.container{padding:20px;text-align:center}
-
-h1{font-size:3rem;margin-bottom:10px;animation:glow 2s infinite alternate}
-@keyframes glow{from{text-shadow:0 0 10px cyan}to{text-shadow:0 0 30px purple}}
-
-input{
-  padding:10px;
-  width:60%;
-  border:none;
-  border-radius:10px;
-  margin-top:20px;
+.center{
+ position:absolute;
+ top:50%;
+ left:50%;
+ transform:translate(-50%,-50%);
+ text-align:center;
 }
 
-button{
-  padding:10px 20px;
-  border:none;
-  border-radius:10px;
-  margin-left:10px;
-  background:linear-gradient(45deg,cyan,purple);
-  color:#fff;
-  cursor:pointer;
+h1{
+ font-size:4rem;
+ text-shadow:0 0 20px cyan,0 0 40px blue;
 }
 
-.tasks{
-  margin-top:30px;
-  max-height:300px;
-  overflow-y:auto;
+.circle{
+ width:300px;
+ height:300px;
+ border-radius:50%;
+ border:2px solid cyan;
+ position:absolute;
+ top:50%;
+ left:50%;
+ transform:translate(-50%,-50%);
+ animation:rotate 10s linear infinite;
+ box-shadow:0 0 30px cyan;
 }
 
-.task{
-  margin:10px auto;
-  padding:10px;
-  width:60%;
-  background:rgba(255,255,255,0.1);
-  border-radius:10px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+.circle::before{
+ content:'';
+ position:absolute;
+ width:260px;
+ height:260px;
+ border-radius:50%;
+ border:2px dashed #0ff;
+ top:50%;
+ left:50%;
+ transform:translate(-50%,-50%);
 }
 
-.timer{
-  margin-top:30px;
-  font-size:2rem;
+@keyframes rotate{
+ from{transform:translate(-50%,-50%) rotate(0deg)}
+ to{transform:translate(-50%,-50%) rotate(360deg)}
+}
+
+.panel{
+ position:absolute;
+ bottom:40px;
+ width:100%;
+ display:flex;
+ justify-content:center;
+ gap:20px;
 }
 
 .card{
-  margin-top:20px;
-  padding:15px;
-  background:rgba(255,255,255,0.05);
-  border-radius:15px;
+ padding:15px 25px;
+ border:1px solid cyan;
+ border-radius:10px;
+ background:rgba(0,255,255,0.05);
+ backdrop-filter:blur(10px);
+ transition:0.3s;
+}
+
+.card:hover{
+ transform:scale(1.1);
+ box-shadow:0 0 20px cyan;
+}
+
+button{
+ margin-top:20px;
+ padding:10px 20px;
+ border:none;
+ border-radius:10px;
+ background:cyan;
+ color:black;
+ cursor:pointer;
+ box-shadow:0 0 20px cyan;
 }
 
 </style>
 </head>
+
 <body>
 
 <canvas id="bg"></canvas>
 
-<div class="container">
-  <h1>FOCUS X</h1>
-  <p>Study. Focus. Execute.</p>
+<div class="circle"></div>
 
-  <div>
-    <input id="taskInput" placeholder="Enter your task...">
-    <button onclick="addTask()">Add</button>
-  </div>
+<div class="center">
+  <h1>JARVIS CORE</h1>
+  <button onclick="activate()">ACTIVATE SYSTEM</button>
+</div>
 
-  <div class="tasks" id="tasks"></div>
-
-  <div class="card">
-    <h2>Pomodoro Timer</h2>
-    <div class="timer" id="timer">25:00</div>
-    <button onclick="startTimer()">Start</button>
-    <button onclick="resetTimer()">Reset</button>
-  </div>
+<div class="panel">
+  <div class="card">SYSTEM STATUS</div>
+  <div class="card">AI INTERFACE</div>
+  <div class="card">DATA STREAM</div>
 </div>
 
 <script>
-// STARFIELD BACKGROUND
-const canvas = document.getElementById('bg');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+// STARFIELD
+const canvas=document.getElementById('bg');
+const ctx=canvas.getContext('2d');
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
 
 let stars=[];
-for(let i=0;i<200;i++){
+for(let i=0;i<400;i++){
  stars.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,z:Math.random()*canvas.width});
 }
 
@@ -105,57 +125,22 @@ function draw(){
  ctx.fillStyle="black";
  ctx.fillRect(0,0,canvas.width,canvas.height);
  for(let s of stars){
-  s.z--;
+  s.z-=2;
   if(s.z<=0)s.z=canvas.width;
   let k=128/s.z;
   let x=s.x*k+canvas.width/2;
   let y=s.y*k+canvas.height/2;
-  let size=(1-s.z/canvas.width)*3;
-  ctx.fillStyle="white";
+  let size=(1-s.z/canvas.width)*4;
+  ctx.fillStyle="cyan";
   ctx.fillRect(x,y,size,size);
  }
  requestAnimationFrame(draw);
 }
 draw();
 
-// TASK SYSTEM
-function addTask(){
- let input=document.getElementById('taskInput');
- let task=input.value;
- if(task==='')return;
-
- let div=document.createElement('div');
- div.className='task';
- div.innerHTML=`${task} <button onclick="this.parentElement.remove()">X</button>`;
- document.getElementById('tasks').appendChild(div);
- input.value='';
-}
-
-// TIMER
-let time=1500;
-let interval;
-
-function startTimer(){
- if(interval)return;
- interval=setInterval(()=>{
-  if(time<=0){clearInterval(interval);interval=null;return}
-  time--;
-  updateTimer();
- },1000);
-}
-
-function resetTimer(){
- clearInterval(interval);
- interval=null;
- time=1500;
- updateTimer();
-}
-
-function updateTimer(){
- let m=Math.floor(time/60);
- let s=time%60;
- document.getElementById('timer').innerText=
-  `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+function activate(){
+ alert("⚡ JARVIS ONLINE");
+ document.body.style.background="radial-gradient(circle,#001,#000)";
 }
 
 </script>
