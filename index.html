@@ -127,18 +127,59 @@ function runCmd(){
  else res.innerText='Unknown Command';
 }
 
-// VOICE (basic)
+// ===== VOICE + WAKE WORD (Hey Jarvis) =====
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-if(SR){
- let rec=new SR();
- rec.continuous=true;
- rec.onresult=e=>{
-  let t=e.results[e.results.length-1][0].transcript;
-  document.getElementById('cmd').value=t;
-  runCmd();
- }
- rec.start();
+let recognizer, isActive=false;
+
+function initVoice(){
+ if(!SR){alert('Speech Recognition not supported');return}
+ recognizer=new SR();
+ recognizer.continuous=true;
+ recognizer.interimResults=true;
+ recognizer.lang='en-US';
+
+ recognizer.onresult=(e)=>{
+  let transcript='';
+  for(let i=e.resultIndex;i<e.results.length;i++){
+    transcript+=e.results[i][0].transcript.toLowerCase();
+  }
+
+  // WAKE WORD DETECTION
+  if(transcript.includes('hey jarvis')){
+    isActive=true;
+    speak('Yes Sir');
+    document.getElementById('response').innerText='Listening...';
+    return;
+  }
+
+  // COMMAND ONLY AFTER WAKE WORD
+  if(isActive){
+    document.getElementById('cmd').value=transcript;
+    runCmd();
+    isActive=false;
+  }
+ };
+
+ recognizer.onerror=()=>{
+   recognizer.stop();
+   setTimeout(()=>recognizer.start(),1000);
+ };
+
+ recognizer.onend=()=>{
+   setTimeout(()=>recognizer.start(),500);
+ };
+
+ recognizer.start();
 }
+
+// TEXT TO SPEECH
+function speak(text){
+ const u=new SpeechSynthesisUtterance(text);
+ u.lang='en-US';
+ speechSynthesis.speak(u);
+}
+
+initVoice();
 
 </script>
 
